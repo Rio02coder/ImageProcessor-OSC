@@ -43,10 +43,20 @@ public class ImageProcessorMT implements Runnable {
      */
     public void run() {
 
-        for(int i = 0; i < image.getWidth(); i = i + SLICE_SIZE) {
-            ImageSliceProcessor isp = new ImageSliceProcessor(this.image, this.filterType, SLICE_SIZE, i);
-            imageSliceProcessors.add(isp);
-            isp.start();
+        if(filterType.equals("GREY")) {
+            for (int i = 0; i < image.getWidth(); i = i + SLICE_SIZE) {
+                ImageSliceProcessor isp = new ImageSliceProcessor(this.image, this.filterType, SLICE_SIZE, i);
+                imageSliceProcessors.add(isp);
+                isp.start();
+            }
+        }
+        else {
+            Color[][] borderedPixels = getImageDataExtended();
+            for (int i = 0; i < image.getWidth(); i = i + SLICE_SIZE) {
+                ImageSliceProcessor isp = new ImageSliceProcessor(borderedPixels, this.filterType, SLICE_SIZE, i);
+                imageSliceProcessors.add(isp);
+                isp.start();
+            }
         }
 
         for(ImageSliceProcessor isp: imageSliceProcessors) {
@@ -206,6 +216,25 @@ public class ImageProcessorMT implements Runnable {
 //        } catch (Exception s) {
 //        }
 //    }
+
+    private Color[][] getImageDataExtended() {
+        PixelReader pr = image.getPixelReader();
+        Color[][] pixels = new Color[(int) image.getWidth() + 2][(int) image.getHeight() + 2];
+
+        for (int i = 0; i < pixels.length; i++) {
+            for (int j = 0; j < pixels.length; j++) {
+                pixels[i][j] = new Color(0.5, 0.5, 0.5, 1.0);
+            }
+        }
+
+        for (int i = 0; i < image.getWidth(); i++) {
+            for (int j = 0; j < image.getHeight(); j++) {
+                pixels[i + 1][j + 1] = pr.getColor(i, j);
+            }
+        }
+
+        return pixels;
+    }
 
     private void saveImage(String fileName) {
         WritableImage wimg = new WritableImage(image.getPixelReader(), (int) image.getWidth(), (int) image.getHeight());

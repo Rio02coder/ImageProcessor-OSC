@@ -11,9 +11,17 @@ public class ImageSliceProcessor implements Runnable {
     private Color[][] outputPixel;
     private int sliceSize;
     private int rowToSliceFrom;
+    private Color[][] pixels;
 
     public ImageSliceProcessor(Image image, String filter, int sliceSize, int rowToSliceFrom) {
         this.image = image;
+        this.filterType = filter;
+        this.sliceSize = sliceSize;
+        this.rowToSliceFrom = rowToSliceFrom;
+    }
+
+    public ImageSliceProcessor(Color[][]pixels, String filter, int sliceSize, int rowToSliceFrom) {
+        this.pixels = pixels;
         this.filterType = filter;
         this.sliceSize = sliceSize;
         this.rowToSliceFrom = rowToSliceFrom;
@@ -191,22 +199,31 @@ public class ImageSliceProcessor implements Runnable {
      * @return The pixel data.
      */
     private Color[][] getPixelDataExtended() {
-        PixelReader pr = image.getPixelReader();
-        Color[][] pixels = new Color[this.sliceSize + 2][(int) image.getHeight() + 2];
+        //PixelReader pr = image.getPixelReader();
+        Color[][] pixelData = new Color[this.sliceSize + 2][this.pixels[0].length];
 
-        for (int i = 0; i < pixels.length; i++) {
-            for (int j = 0; j < pixels[0].length; j++) {
-                pixels[i][j] = new Color(0.5, 0.5, 0.5, 1.0);
-            }
-        }
+//        for (int i = 0; i < pixels.length; i++) {
+//            for (int j = 0; j < pixels[0].length; j++) {
+//                pixels[i][j] = new Color(0.5, 0.5, 0.5, 1.0);
+//            }
+//        }
 
-        for (int i = 0; i < sliceSize; i++) {
-            for (int j = 0; j < image.getHeight(); j++) {
-                pixels[i + 1][j + 1] = pr.getColor(rowToSliceFrom, j);
+        int sizeToUse = sliceSize + 2;
+
+//        for (int i = 0; i < sliceSize; i++) {
+//            for (int j = 0; j < image.getHeight(); j++) {
+//                pixels[i + 1][j + 1] = pr.getColor(rowToSliceFrom, j);
+//            }
+//            rowToSliceFrom++;
+//        }
+
+        for(int i = 0; i < sizeToUse; i++) {
+            for(int j = 0; j < pixels[0].length; j++) {
+                pixelData[i][j] = pixels[rowToSliceFrom][j];
             }
             rowToSliceFrom++;
         }
 
-        return pixels;
+        return pixelData;
     }
 }
