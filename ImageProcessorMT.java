@@ -22,7 +22,7 @@ public class ImageProcessorMT implements Runnable {
     private Color[][] outputPixel;
 
     private ArrayList<ImageSliceProcessor> imageSliceProcessors;
-    private static final int SLICE_SIZE = 126;
+    private int SLICE_SIZE;
 
     public ImageProcessorMT(Image image, String filter, boolean save, String opname) {
 
@@ -31,6 +31,7 @@ public class ImageProcessorMT implements Runnable {
         this.imageSliceProcessors = new ArrayList<>();
         this.filterType = filter;
         this.save = save;
+        this.SLICE_SIZE = (int) image.getHeight() % 2 == 0 ? (int)image.getHeight() / 2 : 1;
     }
 
     public void start() {

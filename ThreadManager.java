@@ -82,13 +82,6 @@ public class ThreadManager implements Runnable {
                         exchangeThread(i);
                     }
                 }
-//                for (ImageProcessorMT imageProcessorMT:
-//                     pool) {
-//                    if(imageProcessorMT.hasFinished()) {
-//                        exchangeThread(counter);
-//                    }
-//                    counter ++;
-//                }
             }
             if(pool.size() < poolSize) {
                 addThreadFromWaitingList();

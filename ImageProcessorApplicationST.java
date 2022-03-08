@@ -16,7 +16,7 @@ public class ImageProcessorApplicationST extends Application {
 	 * Change this constant to change the filtering operation. Options are
 	 * IDENTITY, EDGE, BLUR, SHARPEN, EMBOSS, EDGE, GREY
 	 */
-	private static final String filter = "EMBOSS";
+	private static final String filter = "GREY";
 	
 	/**
 	 * Set this boolean to false if you do NOT wish the new images to be 
@@ -26,7 +26,7 @@ public class ImageProcessorApplicationST extends Application {
 	
 	@Override
     public void start(Stage stage) throws Exception{
-		
+		final long startTime = System.nanoTime();
 		// gets the images from the 'img' folder.
 		ArrayList<ImageInfo> images = findImages();
 
@@ -39,6 +39,8 @@ public class ImageProcessorApplicationST extends Application {
     	}
 
     	System.out.println("Done.");
+		final long duration = System.nanoTime() - startTime;
+		System.out.println(duration);
     	
     	// Kill this application
 		Platform.exit();

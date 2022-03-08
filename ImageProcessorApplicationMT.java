@@ -22,7 +22,7 @@ public class ImageProcessorApplicationMT extends Application {
      * Change this constant to change the filtering operation. Options are
      * IDENTITY, EDGE, BLUR, SHARPEN, EMBOSS, EDGE, GREY
      */
-    private static final String filter = "EMBOSS";
+    private static final String filter = "GREY";
     private static final int SLICE_SIZE = 126;
 
 //    private ThreadManager threadManager;
@@ -43,32 +43,11 @@ public class ImageProcessorApplicationMT extends Application {
 
 
         System.out.println("Working.");
-
-        // for each image creates and runs an ImageProcessor to process the image.
-//        for (int i = 0; i < images.size(); i++) {
-//            ImageProcessorMT ip = new ImageProcessorMT(images.get(i).getImage(), filter, saveNewImages, images.get(i).getFilename() + "_filtered.png");
-//            ip.run();
-//        }
-
-        ThreadManager threadManager = new ThreadManager(2);
+        final long startTime = System.nanoTime();
+        ThreadManager threadManager = new ThreadManager(1);
 
 
         for(int i = 0; i < images.size(); i++) {
-//            ThreadManager threadManager = new ThreadManager(110);
-//            Image image = images.get(i).getImage();
-//            //int height = (int)image.getHeight();
-//            ArrayList<ImageProcessorMT> threads = new ArrayList<>();
-//            for(int j = 0; j < image.getWidth(); j = j + SLICE_SIZE) {
-//                //Color[][] pixel = getPixelData(image, j);
-//                ImageProcessorMT ip = new ImageProcessorMT(image, filter,SLICE_SIZE,j);
-//                threads.add(ip);
-//                threadManager.addImageProcessor(ip);
-//            }
-//            threadManager.start();
-//            threadManager.join();
-//            if(saveNewImages) {
-//                saveImage(image, images.get(i).getFilename() + "_filtered.png", threads);
-//            }
             ImageProcessorMT ip = new ImageProcessorMT(images.get(i).getImage(),filter,saveNewImages,images.get(i).getFilename() + "_filtered.png");
             threadManager.addImageProcessor(ip);
         }
@@ -76,6 +55,8 @@ public class ImageProcessorApplicationMT extends Application {
         threadManager.join();
 
         System.out.println("Done.");
+        final long duration = System.nanoTime() - startTime;
+        System.out.println(duration);
 
         // Kill this application
         Platform.exit();
