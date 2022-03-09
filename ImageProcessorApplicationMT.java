@@ -7,15 +7,9 @@ import java.util.HashSet;
 import java.util.Set;
 import javafx.application.Application;
 import javafx.application.Platform;
-import javafx.embed.swing.SwingFXUtils;
 import javafx.scene.image.Image;
-import javafx.scene.image.PixelReader;
-import javafx.scene.image.PixelWriter;
-import javafx.scene.image.WritableImage;
-import javafx.scene.paint.Color;
 import javafx.stage.Stage;
 
-import javax.imageio.ImageIO;
 
 public class ImageProcessorApplicationMT extends Application {
     /**
@@ -23,11 +17,6 @@ public class ImageProcessorApplicationMT extends Application {
      * IDENTITY, EDGE, BLUR, SHARPEN, EMBOSS, EDGE, GREY
      */
     private static final String filter = "GREY";
-    private static final int SLICE_SIZE = 126;
-
-//    private ThreadManager threadManager;
-//
-//    private ArrayList<ImageProcessorMT> threads;
 
     /**
      * Set this boolean to false if you do NOT wish the new images to be
@@ -43,8 +32,7 @@ public class ImageProcessorApplicationMT extends Application {
 
 
         System.out.println("Working.");
-        final long startTime = System.nanoTime();
-        ThreadManager threadManager = new ThreadManager(1);
+        ThreadManager threadManager = new ThreadManager(2);
 
 
         for(int i = 0; i < images.size(); i++) {
@@ -55,8 +43,6 @@ public class ImageProcessorApplicationMT extends Application {
         threadManager.join();
 
         System.out.println("Done.");
-        final long duration = System.nanoTime() - startTime;
-        System.out.println(duration);
 
         // Kill this application
         Platform.exit();
@@ -96,87 +82,8 @@ public class ImageProcessorApplicationMT extends Application {
         return fileTree;
     }
 
-    private void saveImage(Image image, String fileName, ArrayList<ImageProcessorMT> threads) {
-        WritableImage wimg = new WritableImage(image.getPixelReader(), (int) image.getWidth(), (int) image.getHeight());
-        PixelWriter pw = wimg.getPixelWriter();
-
-        int count = 0;
-        int sliceToGet = 0;
-        for(int i = 0; i < image.getHeight(); i++) {
-            Color[][]pixel = threads.get(sliceToGet).getOutputPixel();
-            for(int j = 0; j < image.getWidth(); j++) {
-                pw.setColor(i,j,pixel[count][j]);
-            }
-            if(count == SLICE_SIZE - 1) {
-                count = 0;
-                sliceToGet ++;
-            }
-            else {
-                count++;
-            }
-        }
-
-        File newFile = new File(fileName);
-
-        try {
-            ImageIO.write(SwingFXUtils.fromFXImage(wimg, null), "png", newFile);
-        } catch (Exception s) {
-        }
-    }
-
     public static void main(String[] args) {
         launch(args);
-    }
-
-    /**
-     * Gets the pixel data from the image but does
-     * NOT add a border.
-     * @return The pixel data.
-     */
-    private Color[][] getPixelData(Image image, int rowToCopy) {
-        PixelReader pr = image.getPixelReader();
-        Color[][] pixels = new Color[1][(int)image.getHeight()];
-        for (int i = 0; i < image.getHeight(); i++) {
-//            for (int j = 0; j < image.getHeight(); j++) {
-//                pixels[i][j] = pr.getColor(i, j);
-//            }
-            pixels[0][i] = pr.getColor(rowToCopy,i);
-        }
-
-        return pixels;
-    }
-
-    /**
-     * This method adds a border to the image and colors the whole image as grey.
-     * @param image
-     * @return pixels which is a grey colored image with a border.
-     */
-    private Color[][] getGreyImage(Image image) {
-        PixelReader pr = image.getPixelReader();
-        Color[][] pixels = new Color[(int) image.getWidth() + 2][(int) image.getHeight() + 2];
-
-        for (int i = 0; i < pixels.length; i++) {
-            for (int j = 0; j < pixels.length; j++) {
-                pixels[i][j] = new Color(0.5, 0.5, 0.5, 1.0);
-            }
-        }
-
-        return pixels;
-    }
-
-    private Color[][] getPixelDataExtendedForFilters(Color[][] pixels, int row, Image image) {
-        PixelReader pr = image.getPixelReader();
-        int numberOfRows = row == 0 || row == image.getHeight() ? 2 : 1;
-        Color[][] pixelRow = new Color[numberOfRows][(int)image.getHeight()];
-
-
-        for(int i = 0; i < pixelRow.length; i++) {
-            for(int j = 0; j < image.getHeight(); j++) {
-
-            }
-        }
-
-        return pixelRow;
     }
 
 

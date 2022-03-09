@@ -69,7 +69,6 @@ public class ImageSliceProcessor implements Runnable {
      */
     private Color[][] applyGreyscale() {
         Color[][] pixel = getPixelData();
-//        Color[][] inputPixels = getPixelData();
         Color[][] outputPixels = new Color[pixel.length][pixel[0].length];
         for (int i = 0; i < (pixel.length);i++) {
             for (int j = 0; j < (pixel[0].length); j++) {
@@ -199,23 +198,10 @@ public class ImageSliceProcessor implements Runnable {
      * @return The pixel data.
      */
     private Color[][] getPixelDataExtended() {
-        //PixelReader pr = image.getPixelReader();
+
         Color[][] pixelData = new Color[this.sliceSize + 2][this.pixels[0].length];
 
-//        for (int i = 0; i < pixels.length; i++) {
-//            for (int j = 0; j < pixels[0].length; j++) {
-//                pixels[i][j] = new Color(0.5, 0.5, 0.5, 1.0);
-//            }
-//        }
-
         int sizeToUse = sliceSize + 2;
-
-//        for (int i = 0; i < sliceSize; i++) {
-//            for (int j = 0; j < image.getHeight(); j++) {
-//                pixels[i + 1][j + 1] = pr.getColor(rowToSliceFrom, j);
-//            }
-//            rowToSliceFrom++;
-//        }
 
         for(int i = 0; i < sizeToUse; i++) {
             for(int j = 0; j < pixels[0].length; j++) {
