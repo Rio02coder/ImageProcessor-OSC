@@ -22,6 +22,15 @@ public class ImageProcessorMT implements Runnable {
     private int SLICE_SIZE;
     private int NUMBER_OF_THREADS;
 
+
+    /**
+     * Constructor to create an Image processor.
+     * Using this constructor would implicitly create two threads working on the image.
+     * @param image the image it has to filter
+     * @param filter the type of filter it needs to apply
+     * @param save a boolean to indicate if the processor needs to save the image when filtered
+     * @param opname the filename under which the filtered image would be saved.
+     */
     public ImageProcessorMT(Image image, String filter, boolean save, String opname) {
 
         this.image = image;
@@ -33,6 +42,14 @@ public class ImageProcessorMT implements Runnable {
         this.SLICE_SIZE = (int)image.getWidth() / this.NUMBER_OF_THREADS;
     }
 
+    /**
+     * Constructor to create an image processor
+     * @param image the image it has to filter
+     * @param filter the type of filter it needs to apply
+     * @param save a boolean to indicate if the processor needs to save the image when filtered
+     * @param opname the filename under which the filtered image would be saved
+     * @param NUMBER_OF_THREADS the number of threads which would be created to apply the filter on this image
+     */
     public ImageProcessorMT(Image image, String filter, boolean save, String opname, int NUMBER_OF_THREADS) {
 
         this.image = image;
@@ -51,6 +68,8 @@ public class ImageProcessorMT implements Runnable {
 
     /**
      * Runs this image processor.
+     * It creates the threads required for slicing the image and gives each thread
+     * the required the data to access its slice.
      */
     public void run() {
         if(filterType.equals("GREY")) {
@@ -104,10 +123,18 @@ public class ImageProcessorMT implements Runnable {
         this.hasFinished = true;
     }
 
+    /**
+     * This method indicates if the process of filtering the image has finished or not.
+     * @return boolean
+     */
     public boolean hasFinished() {
         return this.hasFinished;
     }
 
+    /**
+     * This method takes the image which was passed to its constructor and adds a grey border around it
+     * @return an array of color pixels.
+     */
     private Color[][] getImageDataExtended() {
         PixelReader pr = image.getPixelReader();
         Color[][] pixels = new Color[(int) image.getWidth() + 2][(int) image.getHeight() + 2];
@@ -127,6 +154,11 @@ public class ImageProcessorMT implements Runnable {
         return pixels;
     }
 
+
+    /**
+     * This method saves the image which it was asked to filter.
+     * @param fileName the name under which the filtered image would be saved.
+     */
     private void saveImage(String fileName) {
         WritableImage wimg = new WritableImage(image.getPixelReader(), (int) image.getWidth(), (int) image.getHeight());
         PixelWriter pw = wimg.getPixelWriter();

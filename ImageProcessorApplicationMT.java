@@ -32,7 +32,7 @@ public class ImageProcessorApplicationMT extends Application {
 
 
         System.out.println("Working.");
-        ThreadManager threadManager = new ThreadManager(2);
+        ThreadManager threadManager = new ThreadManager(8);
 
 
         for(int i = 0; i < images.size(); i++) {

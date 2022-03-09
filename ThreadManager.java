@@ -73,6 +73,12 @@ public class ThreadManager implements Runnable {
         }
     }
 
+    /**
+     * This method checks the waiting list for processes
+     * that are waiting and checks the thread pool for the processes
+     * which are vacant. When it finds a vacancy in the thread pool,
+     * it brings a thread from the waiting list and starts it.
+     */
     private void managePool() {
         if(!waitingList.isEmpty()) {
             if(pool.size() == poolSize) {

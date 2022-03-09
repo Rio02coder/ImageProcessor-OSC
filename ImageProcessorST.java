@@ -41,7 +41,7 @@ public class ImageProcessorST {
 	/**
 	 * This method decides whether a filter needs to be applied or not and then
 	 * calls appropriate methods to create the new, filtered pixel data.
-	 * @return
+	 * @return 2d array of Color
 	 */
 	private Color[][] filterImage() {
 
