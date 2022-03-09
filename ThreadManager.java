@@ -1,5 +1,7 @@
 package com.kcl.osc.imageprocessor;
 
+import javafx.util.Pair;
+
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.concurrent.locks.Lock;
@@ -9,13 +11,13 @@ public class ThreadManager implements Runnable {
 
     private int poolSize;
     private ArrayList<ImageProcessorMT>waitingList;
-    private ArrayList<ImageProcessorMT> pool;
+    private ArrayList<Pair<ImageProcessorMT,Thread>> pool;
     private Lock lock;
-    private Thread thread;
-
+    private boolean started;
+    private boolean finishedJoined;
     /**
      * Constructor to initialise the thread pool.
-     * @param poolSize
+     * @param poolSize the size of the pool
      */
     public ThreadManager(int poolSize) {
         this.poolSize = poolSize;
@@ -27,7 +29,7 @@ public class ThreadManager implements Runnable {
     /**
      * This method allows the caller to add an image processor thread.
      * This passed thread is first added to the waiting list and then the thread pool manages the thread.
-     * @param imageProcessorMT
+     * @param imageProcessorMT the processor for the image
      */
     public void addImageProcessor(ImageProcessorMT imageProcessorMT) {
         try {
@@ -48,22 +50,22 @@ public class ThreadManager implements Runnable {
     public void run() {
         try {
             lock.lock();
-            int sizeToAllow = Math.min(waitingList.size(), poolSize);
-            for (int i = 0; i < sizeToAllow; i++) {
-                pool.add(waitingList.get(i));
-            }
-            // Popping from the waiting list
+            int sizeToAllow = Math.min(waitingList.size(), poolSize); // This controls the current size the pool should have.
 
+            // Add threads from the waiting list to the pool
+            for (int i = 0; i < sizeToAllow; i++) {
+                pool.add(new Pair(waitingList.get(i),new Thread(waitingList.get(i))));
+            }
+
+            // Popping from the waiting list
             Iterator<ImageProcessorMT> iterator = waitingList.iterator();
             for (int i = 0; i < sizeToAllow; i++) {
                 iterator.next();
                 iterator.remove();
             }
 
-            // Starting the threads
-            for (ImageProcessorMT thread : pool) {
-                thread.start();
-            }
+            // Starts all the threads
+            pool.forEach(elem -> elem.getValue().start());
         }
         finally {
             lock.unlock();
@@ -71,6 +73,7 @@ public class ThreadManager implements Runnable {
         while(!pool.isEmpty() || !waitingList.isEmpty()) {
             managePool();
         }
+        started = false;
     }
 
     /**
@@ -82,9 +85,8 @@ public class ThreadManager implements Runnable {
     private void managePool() {
         if(!waitingList.isEmpty()) {
             if(pool.size() == poolSize) {
-                //int counter = 0;
                 for (int i = 0; i < pool.size(); i++) {
-                    if (pool.get(i).hasFinished()) {
+                    if (pool.get(i).getKey().hasFinished()) {
                         exchangeThread(i);
                     }
                 }
@@ -94,7 +96,7 @@ public class ThreadManager implements Runnable {
             }
         }
         if(!pool.isEmpty()) {
-            pool.removeIf(ImageProcessorMT::hasFinished);
+            pool.removeIf(elem -> elem.getKey().hasFinished());
         }
     }
 
@@ -107,13 +109,28 @@ public class ThreadManager implements Runnable {
         try {
             lock.lock();
             pool.remove(indexToReplace);
-            pool.add(indexToReplace, waitingList.get(0));// Takes the element at the start of the queue
+            pool.add(indexToReplace, new Pair(waitingList.get(0),new Thread(waitingList.get(0))));// Takes the element at the start of the queue and adds a pair of its thread and the image processor itself
             waitingList.remove(0); // Removes that element
-            pool.get(indexToReplace).start(); // Start the thread
+            pool.get(indexToReplace).getValue().start(); // Start the threads
         }
         finally {
             lock.unlock();
         }
+    }
+
+    public void setJoined(boolean joined) {
+        this.finishedJoined = joined;
+    }
+    public boolean hasJoined() {
+        return this.finishedJoined;
+    }
+
+    public void setStarted(boolean started) {
+        this.started = started;
+    }
+
+    public boolean hasStarted() {
+        return this.started;
     }
 
     /**
@@ -123,9 +140,8 @@ public class ThreadManager implements Runnable {
     private void addThreadFromWaitingList() {
         try {
             lock.lock();
-            pool.add(waitingList.get(0));
-            waitingList.remove(0);
-            pool.get(pool.size() - 1).start();
+            pool.add(new Pair(waitingList.get(0),new Thread(waitingList.get(0))));
+            pool.get(pool.size() - 1).getValue().start();
         }
         finally {
             lock.unlock();
@@ -135,20 +151,29 @@ public class ThreadManager implements Runnable {
     /**
      * This method allows the caller to wait for the thread pool to exist.
      */
-    public void join() {
-        try {
-            thread.join();
+    public synchronized void join() {
+        this.setJoined(false);
+        while(!hasJoined()) {
+            if(hasStarted() && pool.size() == 0 && waitingList.size() == 0) {
+                setJoined(true); // This would set the finishJoined to true and the loop would exit
+            }
+            for(int i = 0; i < pool.size(); i++) {
+                if (i < pool.size()) { // This condition ensures that if the threads are popped off then it will not access it
+                    try {
+                        pool.get(i).getValue().join();
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
         }
-        catch (Exception e) {
-            System.out.println(e);
-        }
+
     }
 
     /**
-     * This method creates a new thread and starts the thread pool
+     * This method sets the thread pool start flag to true
      */
     public void start() {
-        thread = new Thread(this);
-        thread.start();
+        setStarted(true);
     }
 }

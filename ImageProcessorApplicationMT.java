@@ -32,6 +32,7 @@ public class ImageProcessorApplicationMT extends Application {
 
 
         System.out.println("Working.");
+        final long start = System.currentTimeMillis();
         ThreadManager threadManager = new ThreadManager(8);
 
 
@@ -40,9 +41,12 @@ public class ImageProcessorApplicationMT extends Application {
             threadManager.addImageProcessor(ip);
         }
         threadManager.start();
+        new Thread(threadManager).start();
         threadManager.join();
 
         System.out.println("Done.");
+        final long end = System.currentTimeMillis();
+        System.out.println((end - start)/1000.0);
 
         // Kill this application
         Platform.exit();

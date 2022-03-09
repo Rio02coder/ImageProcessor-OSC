@@ -16,7 +16,6 @@ public class ImageProcessorMT implements Runnable {
     private String opfilename;
     private String filterType;
     private boolean save;
-    private Thread thread;
     private boolean hasFinished;
     private ArrayList<ImageSliceProcessor> imageSliceProcessors;
     private int SLICE_SIZE;
@@ -59,11 +58,6 @@ public class ImageProcessorMT implements Runnable {
         this.save = save;
         this.NUMBER_OF_THREADS = NUMBER_OF_THREADS;
         this.SLICE_SIZE = (int)image.getWidth() / this.NUMBER_OF_THREADS;
-    }
-
-    public void start() {
-        thread = new Thread(this);
-        thread.start();
     }
 
     /**
